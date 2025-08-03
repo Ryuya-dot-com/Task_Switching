@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手がかり付き課題切り替え実験</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            color: white;
+            font-family: 'Meiryo', 'Hiragino Sans', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #script-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .screen {
+            display: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* エントリー画面のスタイル */
+        .entry-card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            padding: 50px;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 2px solid #333;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            color: #fff176;
+            margin-bottom: 40px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #81c784;
+            font-size: 20px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 2px solid #555;
+            background-color: #2a2a2a;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #81c784;
+            background-color: #333;
+        }
+
+        .start-btn {
+            margin-top: 40px;
+            font-size: 22px;
+            padding: 15px 50px;
+            border-radius: 10px;
+            border: none;
+            background: #4caf50;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            background: #66bb6a;
+            transform: translateY(-2px);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 既存のスタイル（修正版） */
+        .instruction-box {
+            border: 3px solid;
+            border-radius: 20px;
+            padding: 40px;
+            background-color: #0a0a0a;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        #info1 .instruction-box {
+            border-color: #ffeb3b;
+        }
+
+        #instruction1 .instruction-box,
+        #instruction2 .instruction-box,
+        #instruction3 .instruction-box,
+        #instruction4 .instruction-box {
+            border-color: #5c6bc0;
+        }
+
+        h1 {
+            color: #ff7043;
+            font-size: clamp(40px, 8vw, 60px);
+            margin: 20px 0;
+        }
+
+        .yellow-text {
+            color: #fff176;
+            font-size: clamp(20px, 3vw, 28px);
+            line-height: 1.8;
+        }
+
+        .instruction-title {
+            color: #ffeb3b;
+            font-size: clamp(36px, 6vw, 48px);
+            margin-bottom: 40px;
+        }
+
+        .instruction-content {
+            color: #fff176;
+            font-size: clamp(24px, 4vw, 32px);
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .press-space {
+            color: #81c784;
+            font-size: clamp(20px, 3vw, 28px);
+            margin-top: 40px;
+            font-style: italic;
+        }
+
+        .fixation {
+            font-size: 60px;
+            color: white;
+        }
+
+        .cue {
+            font-size: 48px;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 10px;
+        }
+
+        .color-cue {
+            background-color: #e91e63;
+            color: white;
+        }
+
+        .shape-cue {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .stimulus {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+        }
+
+        .circle {
+            border-radius: 50%;
+        }
+
+        .rectangle {
+            border-radius: 10px;
+        }
+
+        .yellow {
+            background-color: #ffeb3b;
+        }
+
+        .blue {
+            background-color: #42a5f5;
+        }
+
+        .feedback {
+            color: #ff7043;
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .practice-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #81c784;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #81c784;
+        }
+
+        .ready-flags {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .flag {
+            width: 80px;
+            height: 60px;
+        }
+
+        .results {
+            background: #1a1a1a;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            max-width: 700px;
+            margin: 0 auto;
+            border: 2px solid #333;
+        }
+
+        .results-content {
+            color: white;
+            font-size: 24px;
+            line-height: 2;
+            text-align: left;
+        }
+
+        .download-btn {
+            margin-top: 30px;
+            font-size: 20px;
+            padding: 12px 40px;
+            border-radius: 8px;
+            border: none;
+            background: #2196f3;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #42a5f5;
+            transform: translateY(-2px);
+        }
+
+        .thank-you-box {
+            border: 3px solid #ffeb3b;
+            border-radius: 20px;
+            padding: 40px;
+            background-color: #0a0a0a;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .example-section {
+            margin: 40px 0;
+        }
+
+        .example-stimulus {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            background-color: #4dd0e1;
+            border-radius: 50%;
+        }
+
+        em {
+            font-style: normal;
+            color: #81c784;
+            font-weight: bold;
+        }
+
+        strong {
+            color: #ffc107;
+            font-size: 1.1em;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .entry-card {
+                padding: 30px;
+            }
+            
+            .instruction-box {
+                padding: 20px;
+            }
+            
+            .results {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="script-container">
+        <!-- 参加者情報入力画面 -->
+        <div id="entryScreen" class="screen active">
+            <div class="entry-card">
+                <div class="entry-title">手がかり付き課題切り替え実験</div>
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label for="participantName">参加者ID（必須）</label>
+                        <input type="text" id="participantName" required placeholder="氏名またはID番号">
+                    </div>
+                    <div class="form-group">
+                        <label for="participantAge">年齢</label>
+                        <input type="number" id="participantAge" min="1" max="120" placeholder="例: 25">
+                    </div>
+                    <div class="form-group">
+                        <label for="participantGender">性別</label>
+                        <select id="participantGender">
+                            <option value="">選択してください</option>
+                            <option value="male">男性</option>
+                            <option value="female">女性</option>
+                            <option value="other">その他</option>
+                            <option value="na">回答しない</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="start-btn">実験を開始する</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Screen 1 -->
+        <div id="info1" class="screen">
+            <div class="instruction-box">
+                <h1>手がかり付き課題切り替え</h1>
+                <div class="yellow-text">
+                    手がかり付き課題では、注意の切り替え能力を測定します。<br>
+                    これから、説明を読んでいただき、その後、定期的に切り替わる<br>
+                    2つの異なる課題を行っていただきます。切り替えの難易度は、<br>
+                    手がかりと命令刺激（すぐに反応する必要があるもの）の間の<br>
+                    時間によって変わります。<br><br>
+                    <div class="press-space">スペースキーを押して説明に進んでください</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruction 1 -->
+        <div id="instruction1" class="screen">
+            <div class="instruction-box">
+                <div class="instruction-title">説明 1</div>
+                <div class="instruction-content">
+                    <em>形</em>課題では：<br>
+                    円が表示されたら、<strong>B</strong> を押してください<br>
+                    四角が表示されたら、<strong>N</strong> を押してください<br><br>
+                    <em>色</em>課題では：<br>
+                    刺激が黄色なら、<strong>B</strong> を押してください<br>
+                    刺激が青色なら、<strong>N</strong> を押してください<br><br>
+                    <div class="press-space">スペースキーを押して続ける...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruction 2 -->
+        <div id="instruction2" class="screen">
+            <div class="instruction-box">
+                <div class="instruction-title">説明 2</div>
+                <div class="instruction-content">
+                    各試行（数秒間）では、最初に「＋」が表示され、<br>
+                    続いて「形」または「色」という単語が表示されます。<br>
+                    その後、黄色または青色の円または四角が表示されます。<br><br>
+                    表示された課題の指示に従って反応してください。<br><br>
+                    <div class="press-space">スペースキーを押して続ける...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruction 3 -->
+        <div id="instruction3" class="screen">
+            <div class="instruction-box">
+                <div class="instruction-title">説明 3</div>
+                <div class="example-section">
+                    <div class="yellow-text">例：</div>
+                    <div class="cue shape-cue">形</div>
+                    <div class="yellow-text" style="margin: 20px 0;">の後に</div>
+                    <div class="example-stimulus"></div>
+                    <div class="instruction-content" style="margin-top: 30px;">
+                        が表示されたらBキーを押してください。<br>
+                        形課題では、円に対してBキーで<br>
+                        反応する必要があるからです。<br>
+                        形課題を行うときは、色は無関係です。<br><br>
+                        <div class="press-space">スペースキーを押して続ける...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruction 4 -->
+        <div id="instruction4" class="screen">
+            <div class="instruction-box">
+                <div class="instruction-title">説明 4</div>
+                <div class="instruction-content">
+                    以上です！矢印キーを使って<br>
+                    前の画面に戻って、正確な指示を<br>
+                    再確認することができます。<br><br>
+                    キーボードの矢印キーで前後に移動できます。<br><br>
+                    キーボードの「Q」キーを押すと<br>
+                    課題を開始します。<br><br>
+                    <div class="press-space">スペースキーを押して続ける...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ready Screen -->
+        <div id="ready" class="screen">
+            <div class="ready-flags">
+                <svg class="flag" viewBox="0 0 100 80">
+                    <rect x="10" y="10" width="80" height="60" fill="#ff7043"/>
+                    <circle cx="20" cy="10" r="5" fill="#ff7043"/>
+                    <rect x="15" y="10" width="10" height="70" fill="white"/>
+                </svg>
+                <svg class="flag" viewBox="0 0 100 80">
+                    <rect x="10" y="10" width="80" height="60" fill="#81c784"/>
+                    <circle cx="20" cy="10" r="5" fill="#81c784"/>
+                    <rect x="15" y="10" width="10" height="70" fill="white"/>
+                </svg>
+                <svg class="flag" viewBox="0 0 100 80">
+                    <rect x="10" y="10" width="80" height="60" fill="#4dd0e1"/>
+                    <circle cx="20" cy="10" r="5" fill="#4dd0e1"/>
+                    <rect x="15" y="10" width="10" height="70" fill="white"/>
+                </svg>
+            </div>
+            <div class="yellow-text">
+                練習は終了しました。<br>
+                本番の50試行の準備はできていますか？<br>
+                準備ができたらスペースキーを押してください。
+            </div>
+        </div>
+
+        <!-- Trial Screen -->
+        <div id="trial" class="screen">
+            <div id="practice-indicator" class="practice-indicator" style="display: none;">練習試行</div>
+            <div id="trial-content"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results" class="screen">
+            <div class="results">
+                <h2 style="color: #ffeb3b; text-align: center; margin-bottom: 30px;">実験結果</h2>
+                <div id="results-content" class="results-content"></div>
+                <div style="text-align: center;">
+                    <button id="downloadBtn" class="download-btn">結果をダウンロード (CSV)</button>
+                    <div class="press-space" style="margin-top: 30px;">スペースキーを押して続ける</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thank You Screen -->
+        <div id="thankyou" class="screen">
+            <div class="thank-you-box">
+                <h1 style="font-size: 60px;">お疲れさまでした！</h1>
+                <div class="yellow-text">
+                    課題切り替え実験が終了しました。<br>
+                    ご参加ありがとうございました。<br><br>
+                    実験データは既に保存されています。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="experiment.js"></script>
+</body>
+</html>
