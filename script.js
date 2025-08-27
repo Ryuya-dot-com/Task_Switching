@@ -150,9 +150,36 @@ async function runTrial() {
     trialContent.innerHTML = '';
     await sleep(config.cueDelay);
     
-    // 刺激表示
+    // 刺激表示（練習時はヒント付き）
     const shapeClass = stimulus.shape === 'circle' ? 'circle' : 'rectangle';
-    trialContent.innerHTML = `<div class="stimulus ${shapeClass} ${stimulus.color}"></div>`;
+    let stimulusHTML = `<div class="stimulus ${shapeClass} ${stimulus.color}"></div>`;
+    
+    // 練習時のヒント表示
+    if (isTraining) {
+        let hintText = '';
+        if (currentTask === 1) { // 色課題
+            hintText = `<div class="practice-hint">
+                <div class="hint-title">色課題</div>
+                <div class="hint-keys">
+                    <span class="key-hint yellow-hint">黄色 → B</span>
+                    <span class="key-hint blue-hint">青色 → N</span>
+                </div>
+                <div class="current-answer">正解: <strong>${stimulus.correctKey.toUpperCase()}</strong></div>
+            </div>`;
+        } else { // 形課題
+            hintText = `<div class="practice-hint">
+                <div class="hint-title">形課題</div>
+                <div class="hint-keys">
+                    <span class="key-hint">円 → B</span>
+                    <span class="key-hint">四角 → N</span>
+                </div>
+                <div class="current-answer">正解: <strong>${stimulus.correctKey.toUpperCase()}</strong></div>
+            </div>`;
+        }
+        stimulusHTML += hintText;
+    }
+    
+    trialContent.innerHTML = stimulusHTML;
     
     // 反応収集開始
     trialStartTime = Date.now();
@@ -319,9 +346,42 @@ function mean(arr) {
     return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-// データのダウンロード機能
+// データのダウンロード機能（英語サマリー統計付き）
 function downloadData() {
-    const csvContent = convertToCSV(trialData);
+    // 統計計算
+    const mainTrials = trialData.filter(t => t.phase === 'main');
+    const correctTrials = mainTrials.filter(t => t.status === 'CORRECT');
+    const repeatTrials = correctTrials.filter(t => !t.taskSwitch);
+    const switchTrials = correctTrials.filter(t => t.taskSwitch);
+    const congruentTrials = correctTrials.filter(t => t.congruent);
+    const incongruentTrials = correctTrials.filter(t => !t.congruent);
+    
+    const avgRT = mean(correctTrials.map(t => t.rt));
+    const repeatRT = mean(repeatTrials.map(t => t.rt));
+    const switchRT = mean(switchTrials.map(t => t.rt));
+    const congruentRT = mean(congruentTrials.map(t => t.rt));
+    const incongruentRT = mean(incongruentTrials.map(t => t.rt));
+    
+    const switchCost = switchRT - repeatRT;
+    const interference = incongruentRT - congruentRT;
+    const accuracy = (correctTrials.length / mainTrials.length * 100).toFixed(1);
+    
+    // サマリー行を追加（英語）
+    const summaryData = [
+        ...trialData,
+        {}, // 空行
+        { participantName: '=== SUMMARY STATISTICS ===' },
+        { participantName: 'Accuracy', participantAge: accuracy + '%' },
+        { participantName: 'Average RT (all correct)', participantAge: Math.round(avgRT) + 'ms' },
+        { participantName: 'Repeat trial RT', participantAge: Math.round(repeatRT) + 'ms' },
+        { participantName: 'Switch trial RT', participantAge: Math.round(switchRT) + 'ms' },
+        { participantName: 'Switch cost', participantAge: Math.round(switchCost) + 'ms' },
+        { participantName: 'Congruent trial RT', participantAge: Math.round(congruentRT) + 'ms' },
+        { participantName: 'Incongruent trial RT', participantAge: Math.round(incongruentRT) + 'ms' },
+        { participantName: 'Interference effect', participantAge: Math.round(interference) + 'ms' }
+    ];
+    
+    const csvContent = convertToCSV(summaryData);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
