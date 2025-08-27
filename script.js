@@ -346,7 +346,7 @@ function mean(arr) {
     return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-// データのダウンロード機能（英語サマリー統計付き）
+// データのダウンロード機能
 function downloadData() {
     // 統計計算
     const mainTrials = trialData.filter(t => t.phase === 'main');
@@ -366,7 +366,7 @@ function downloadData() {
     const interference = incongruentRT - congruentRT;
     const accuracy = (correctTrials.length / mainTrials.length * 100).toFixed(1);
     
-    // サマリー行を追加（英語）
+    // サマリー行を追加
     const summaryData = [
         ...trialData,
         {}, // 空行
@@ -397,7 +397,7 @@ function downloadData() {
     document.body.removeChild(link);
 }
 
-// CSVへの変換（UTF-8 BOM付き）
+// CSVへの変換（UTF-8 BOM）
 function convertToCSV(data) {
     if (data.length === 0) return '';
     
@@ -419,7 +419,6 @@ function convertToCSV(data) {
         }).join(',');
     });
     
-    // UTF-8 BOMを追加（Excelで文字化けを防ぐため）
     const BOM = '\uFEFF';
     return BOM + csvHeaders + '\n' + csvRows.join('\n');
 }
