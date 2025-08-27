@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>手がかり付き課題切り替え実験</title>
+    <title>Cued Task Switching - 参加者情報</title>
     <style>
         body {
             margin: 0;
@@ -223,6 +223,51 @@
             border: 2px solid #81c784;
         }
 
+        /* 練習時のヒント表示用スタイル */
+        .practice-hint {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid #81c784;
+        }
+
+        .hint-title {
+            color: #81c784;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .hint-keys {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .key-hint {
+            font-size: 20px;
+            color: white;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+
+        .yellow-hint {
+            border: 2px solid #ffeb3b;
+        }
+
+        .blue-hint {
+            border: 2px solid #42a5f5;
+        }
+
+        .current-answer {
+            color: #ffc107;
+            font-size: 28px;
+            margin-top: 10px;
+        }
+
         .ready-flags {
             display: flex;
             justify-content: center;
@@ -300,6 +345,13 @@
         strong {
             color: #ffc107;
             font-size: 1.1em;
+        }
+
+        .key-instruction-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
 
         /* レスポンシブ対応 */
@@ -418,13 +470,24 @@
             <div class="instruction-box">
                 <div class="instruction-title">説明 4</div>
                 <div class="instruction-content">
-                    以上です！矢印キーを使って<br>
-                    前の画面に戻って、正確な指示を<br>
-                    再確認することができます。<br><br>
-                    キーボードの矢印キーで前後に移動できます。<br><br>
-                    キーボードの「Q」キーを押すと<br>
-                    課題を開始します。<br><br>
-                    <div class="press-space">スペースキーを押して続ける...</div>
+                    以上です！<br><br>
+                    
+                    <div class="key-instruction-box">
+                        <strong style="color: #81c784;">操作方法：</strong><br>
+                        ← 左矢印キー：前の説明に戻る<br>
+                        → 右矢印キー：次の説明に進む<br>
+                        スペースキー：次へ進む<br>
+                        Qキー：練習を開始する
+                    </div>
+                    
+                    正確な指示を再確認したい場合は、<br>
+                    <strong>左矢印キー（←）</strong>で前の画面に戻れます。<br><br>
+                    
+                    準備ができたら、キーボードの<br>
+                    <strong style="color: #ffc107; font-size: 1.3em;">「Q」キー</strong>を押して<br>
+                    練習試行を開始してください。<br><br>
+                    
+                    <div class="press-space">Qキーを押して練習開始 / 左矢印で前の説明へ</div>
                 </div>
             </div>
         </div>
@@ -476,7 +539,7 @@
         <!-- Thank You Screen -->
         <div id="thankyou" class="screen">
             <div class="thank-you-box">
-                <h1 style="font-size: 60px;">お疲れさまでした！</h1>
+                <h1 style="font-size: 60px;">お疲れ様でした！</h1>
                 <div class="yellow-text">
                     課題切り替え実験が終了しました。<br>
                     ご参加ありがとうございました。<br><br>
@@ -486,6 +549,6 @@
         </div>
     </div>
 
-    <script src="experiment.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
